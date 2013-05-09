@@ -1,20 +1,20 @@
 require 'puppet'
 require 'puppet/network/http_pool'
+require "net/http"
+require "uri"
 
 Puppet::Reports.register_report(:drupal_report) do
 	desc "Drupal custom report handlers"
 	def process
 
-		connection = Puppet::Network::HttpPool.http_instance(Puppet[:server],80)
-
 		self.logs.each do |log|
+			
+			myMessage = URI.escape(log.message)
 
-			path = "/puppet/post/#{self.host}/#{log.level}/#{log.message}"
+			path = "http://#{self.host}/puppet/post/#{self.host}/#{log.level}/#{myMessage}"
 
-puts "drupal reports " << path
-
-#		connection.request_get(path,{"Accept" => options[:accept]}).body
-			connection.request_get(path).body
+			uri = URI.parse(path)
+			response = Net::HTTP.get_response(uri)
 		end
 	end
 end
